@@ -289,11 +289,19 @@ static bool is_transient_for(struct sway_view *child,
 		return false;
 	}
 	struct wlr_xwayland_surface *surface = child->wlr_xwayland_surface;
+	struct wlr_xwayland_surface *flyd_ptr = child->wlr_xwayland_surface;
 	while (surface) {
 		if (surface->parent == ancestor->wlr_xwayland_surface) {
 			return true;
 		}
 		surface = surface->parent;
+		if (flyd_ptr->parent != NULL) {
+			flyd_ptr = flyd_ptr->parent->parent;
+			if (surface == flyd_ptr) {
+				sway_log(SWAY_DEBUG, "loop in surface relations detected");
+				return false;
+			}
+		}
 	}
 	return false;
 }
